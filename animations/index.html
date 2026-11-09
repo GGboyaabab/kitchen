@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hello Kitty · Kindle 状态动画</title><link rel="stylesheet" href="preview.css"></head>
+<body><main>
+<header><p class="eyebrow">HELLO KITTY · KITCHEN MOTION STUDY</p><h1>Hello Kitty，陪你做饭。</h1><p>给墨水屏的慢节奏状态设计。先看画面和换帧，再用真机校准。</p></header>
+<section class="workspace"><div class="device"><div class="screen">
+<div class="screen-top"><b>Hello Kitty 厨房</b><span>状态演示</span></div>
+<div class="scene"><img id="character" width="320" height="280" src="frames/idle-0.svg" alt="Hello Kitty 安静地等待"></div>
+<h2 id="title">今天，也好好吃饭。</h2><p id="copy">选几样手边的食材，我们一起做顿饭。</p>
+<button class="screen-action" id="action">选食材 →</button><div class="screen-foot">把平常的日子，煮出一点香气。</div>
+</div><div class="brand">kindle</div></div>
+<aside><span class="pill">黑白 / 低频换帧 / 无渐变</span><h2>看得见的状态，<br>安静一点的陪伴。</h2>
+<div class="states" id="states" aria-label="切换状态"></div>
+<p id="detail">待机保持静止；只有唤醒时播放一次眨眼。</p>
+<div class="controls"><button id="play">播放一次</button><button id="next">下一帧</button><button id="reset">回到首帧</button></div>
+<p class="meta" id="meta" role="status">静态预览 · 第 1 / 4 帧</p>
+<label class="reduce"><input id="static" type="checkbox"> 只看静态画面</label>
+<a id="download" href="frames/idle-0.svg" download>下载当前 SVG 帧 ↗</a>
+<p class="note">这里展示设计，不会请求模型。“生成菜谱”与“菜谱就绪”需要由真实任务状态驱动，不会靠动画计时假装生成成功。</p>
+</aside></section>
+<section class="story"><div><p class="eyebrow">FRAME BY FRAME</p><h2>四帧就能讲清楚。</h2></div><div id="filmstrip" class="filmstrip"></div></section>
+<footer>默认待机静止。浏览器预览不能模拟 Kindle 的残影、刷新闪烁和实际耗电。此页面也不是系统休眠屏保。</footer>
+</main><script src="preview.js"></script></body></html>

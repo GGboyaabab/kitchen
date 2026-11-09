@@ -1,0 +1,31 @@
+<view class="container">
+  <view class="eyebrow">KITCHEN / TODAY</view><view class="title">今天吃什么？</view>
+  <view wx:if="!connected" class="panel">
+    <view class="name">连接厨房</view>
+    <label>后端地址</label><input value="{{base}}" data-field="base" bindinput="input" placeholder="https://kitchen.example.com" />
+    <label>小程序口令</label><input password value="{{token}}" data-field="token" bindinput="input" placeholder="服务端 KITCHEN_APP_TOKEN" />
+    <button bindtap="connect" loading="{{busy}}" disabled="{{busy}}">开始选菜</button>
+    <view class="muted">口令只保留在本次小程序内存，不保存到本机。</view>
+  </view>
+  <block wx:else>
+    <block wx:if="!recipe">
+      <view class="panel"><view class="name">冰箱里有什么？</view><view class="muted">点一下食材即可选择，可在“管理厨房”中拍照添加更多食材。</view>
+        <view class="ingredient-grid"><view wx:for="{{ingredients}}" wx:key="name" class="ingredient {{item.selected ? 'picked' : ''}}" data-name="{{item.name}}" bindtap="toggle"><image wx:if="item.icon" src="{{item.icon}}" mode="aspectFit" /><view wx:else class="icon-placeholder">{{item.initial}}</view><view class="ingredient-name">{{item.selected ? '✓ ' : ''}}{{item.name}}</view></view></view>
+      </view>
+      <view class="panel"><view class="name">用餐条件</view><view class="condition"><view><label>几个人</label><input type="number" value="{{peopleInput}}" data-field="peopleInput" bindinput="input" /></view><view><label>可用分钟</label><input type="number" value="{{minutesInput}}" data-field="minutesInput" bindinput="input" /></view></view><button class="secondary" bindtap="preferences" disabled="{{busy}}">更新推荐</button></view>
+      <view class="panel"><view class="name">没有合适的？</view><view class="muted">根据已选食材与本地菜谱模板生成一道新菜，可能调用聊天模型。</view><button bindtap="generateRecipe" disabled="{{busy || job}}" loading="{{busy || job}}">AI 生成菜谱</button></view>
+      <view wx:if="generatedRecipe" class="panel generated"><view class="eyebrow">AI / 待确认</view><view class="name">{{generatedRecipe.name}}</view><view class="muted">约 {{generatedRecipe.minutes}} 分钟 · {{generatedRecipe.servings}} 人份</view><view class="muted">食材：{{generatedRecipe.ingredientText}}</view><view wx:for="{{generatedRecipe.steps}}" wx:key="*this" class="generated-step">{{index + 1}}. {{item}}</view><button bindtap="saveGenerated" disabled="{{busy}}">保存到菜谱库</button></view>
+      <view class="name">可以做这些</view>
+      <view wx:for="{{recommendations}}" wx:key="id" class="panel"><view class="name">{{item.name}}</view><view class="muted">约 {{item.minutes}} 分钟 · {{item.servings}} 人份</view><view class="muted">主要食材：{{item.ingredientText}}</view><button bindtap="start" data-id="{{item.id}}" disabled="{{busy}}">查看做法</button></view>
+    </block>
+    <block wx:else>
+      <view class="panel"><view class="eyebrow">正在做</view><view class="title small-title">{{recipe.name}}</view><view wx:if="state.step &lt; recipe.steps.length" class="muted">第 {{state.step + 1}} / {{recipe.steps.length}} 步</view><view wx:else class="muted">已完成 · 共 {{recipe.steps.length}} 步</view>
+        <view wx:if="state.step &lt; recipe.steps.length" class="current-step">{{recipe.steps[state.step]}}</view><view wx:else class="current-step">完成啦，开饭！</view>
+        <view class="row"><button class="secondary grow" bindtap="step" data-delta="-1" disabled="{{busy || state.step === 0}}">上一步</button><button class="grow" bindtap="step" data-delta="1" disabled="{{busy || state.step >= recipe.steps.length}}">下一步</button></view>
+      </view>
+      <view class="panel"><view class="name">问厨房助手</view><input value="{{question}}" data-field="question" bindinput="input" maxlength="500" placeholder="没有生抽怎么办？" /><button bindtap="ask" disabled="{{busy || job}}" loading="{{busy || job}}">提问</button><view wx:if="answer" class="answer">{{answer}}</view></view>
+    </block>
+    <button class="secondary" bindtap="manage">管理厨房</button><button class="secondary" bindtap="disconnect">断开连接</button>
+  </block>
+  <view wx:if="notice" class="notice">{{notice}}</view>
+</view>

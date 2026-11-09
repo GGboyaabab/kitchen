@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="280" viewBox="0 0 320 280" role="img" aria-label="Hello Kitty 厨房助手">
+<rect width="320" height="280" fill="white"/>
+<g stroke="black" stroke-width="4" fill="white" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="252" cy="101" r="3"/><circle cx="267" cy="85" r="5"/><path d="M258 47q-5-16 11-18 7-15 20-4 18-3 17 13 12 16-5 22h-27q-16 1-16-13Z" stroke-width="3"/><circle cx="272" cy="43" r="2" fill="black" stroke="none"/><circle cx="279" cy="43" r="2" fill="black" stroke="none"/>
+<path d="M127 175q-20 14-17 54h100q3-40-17-54Z"/>
+<path d="M134 180v20h52v-20m-58 20-5 29h74l-5-29Z"/>
+<path d="M146 210h28v14h-28Z" stroke-width="3"/>
+<ellipse cx="130" cy="237" rx="22" ry="12"/><ellipse cx="190" cy="237" rx="22" ry="12"/>
+<path d="M196 182q21-1 25 14t-18 16"/>
+<path fill="white" d="M120 192q-19 5-21-9t11-23q10-3 13 7l5 13"/>
+<g transform="rotate(-4 160 120)">
+<path d="M81 92 83 47q1-10 11-6l34 19q31-8 63 0l33-19q11-4 12 7l3 43q18 17 12 45-5 34-46 41-43 9-88-1-41-9-43-39-3-26 7-45Z"/>
+<g fill="none" stroke-width="3.5"><path d="m86 121-25-5m25 17H57m32 12-25 8m170-32 25-5m-25 17h29m-32 12 25 8"/></g>
+<g fill="black" stroke="none"><ellipse cx="125" cy="128" rx="5" ry="7"/><ellipse cx="195" cy="128" rx="5" ry="7"/></g>
+<ellipse cx="160" cy="144" rx="8" ry="5" stroke-width="3"/>
+<g transform="rotate(12 217 69)"><path d="M211 67q-25-25-33-9-9 18 11 25l22-9m11-7q24-26 32-9 8 18-11 25l-21-9Z"/><ellipse cx="217" cy="70" rx="9" ry="11"/></g>
+</g>
+<path d="M108 258h104" fill="none" stroke-width="2"/>
+</g></svg>

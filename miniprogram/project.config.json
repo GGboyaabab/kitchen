@@ -1,0 +1,8 @@
+{
+  "appid": "touristappid",
+  "projectname": "kitchen-kindle-admin",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "./",
+  "setting": {"es6": true, "minified": true, "urlCheck": true},
+  "libVersion": "latest"
+}

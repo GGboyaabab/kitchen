@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="eyebrow">KITCHEN / STUDIO</view><view class="title">厨房管理</view>
+  <view class="muted">把食材、菜谱和模型整理好，供手机端随时选菜做饭。</view>
+  <view wx:if="!connected" class="panel">
+    <view class="name">连接你的厨房</view>
+    <label>后端地址（正式环境使用 HTTPS）</label><input value="{{base}}" data-field="base" bindinput="input" placeholder="https://kitchen.example.com" />
+    <label>管理口令（不是模型 API Key）</label><input password value="{{token}}" data-field="token" bindinput="input" placeholder="服务端 KITCHEN_ADMIN_TOKEN" />
+    <button bindtap="connect" loading="{{busy}}" disabled="{{busy}}">连接管理后台</button>
+    <view class="muted">管理口令仅保留在本次小程序内存，不保存到本地存储。</view>
+  </view>
+  <block wx:else>
+    <view class="tabs"><button class="{{tab === 'ingredients' ? 'active' : ''}}" data-tab="ingredients" bindtap="tab">食材库</button><button class="{{tab === 'recipes' ? 'active' : ''}}" data-tab="recipes" bindtap="tab">菜谱库</button><button class="{{tab === 'models' ? 'active' : ''}}" data-tab="models" bindtap="tab">模型配置</button></view>
+    <view wx:if="job" class="panel"><view>有一个后台任务正在处理</view><button bindtap="resumeJob" class="secondary">继续查询</button></view>
+    <block wx:if="tab === 'ingredients'">
+      <view class="panel"><view class="name">拍一下，添加新食材</view><button class="secondary" bindtap="choosePhoto">拍照 / 从相册选择</button><image wx:if="photo" src="{{photo}}" mode="aspectFit" /><button wx:if="photo" class="secondary" bindtap="removePhoto">移除照片</button>
+        <label>识别补充说明</label><input value="{{note}}" data-field="note" bindinput="input" maxlength="500" placeholder="例如：左边是鸡腿" />
+        <button bindtap="recognize" disabled="{{busy || job}}" loading="{{busy}}">识别食材（调用 API）</button>
+        <view class="divider"><label>确认名称 / 手动输入，用逗号分隔</label><textarea value="{{names}}" data-field="names" bindinput="input" maxlength="500" placeholder="鸡腿，土豆，鸡蛋" /><button bindtap="addIngredients" disabled="{{busy}}">确认加入食材库</button><view class="muted">识别后不会自动入库，也不会自动生图。</view></view>
+      </view>
+      <view wx:for="{{ingredients}}" wx:key="name" class="panel"><view class="row"><image wx:if="item.image" src="{{item.image}}" mode="aspectFit" /><view wx:else class="icon-placeholder">{{item.initial}}</view><view class="grow"><view class="name">{{item.name}}</view><view class="muted">{{item.generated ? '黑白图标已保存' : '使用内置示意图 / 占位图'}}</view></view></view>
+        <button bindtap="generate" data-name="{{item.name}}" disabled="{{busy || job}}">{{item.generated ? '复用已有图片' : '生成墨水屏图片（调用 API）'}}</button>
+        <button wx:if="item.generated" class="secondary" data-force="{{true}}" data-name="{{item.name}}" bindtap="generate" disabled="{{busy || job}}">重新生成（调用 API）</button>
+        <view class="row"><button class="secondary grow" data-name="{{item.name}}" bindtap="renameIngredient" disabled="{{busy || job}}">改名</button><button class="danger grow" data-name="{{item.name}}" bindtap="deleteIngredient" disabled="{{busy || job}}">删除</button></view>
+      </view>
+    </block>
+    <block wx:if="tab === 'recipes'">
+      <button bindtap="editRecipe">＋ 新建菜谱</button>
+      <view wx:if="recipeDraft" class="panel"><view class="name">编辑菜谱</view>
+        <label>菜名</label><input value="{{recipeDraft.name}}" data-field="name" bindinput="recipeInput" maxlength="24" />
+        <label>预计分钟</label><input type="number" value="{{recipeDraft.minutes}}" data-field="minutes" bindinput="recipeInput" />
+        <label>参考人数</label><input type="number" value="{{recipeDraft.servings}}" data-field="servings" bindinput="recipeInput" />
+        <label>主要食材，逗号分隔</label><textarea value="{{recipeDraft.ingredientsText}}" data-field="ingredientsText" bindinput="recipeInput" maxlength="1000" />
+        <label>食材及用量，每行一项</label><textarea value="{{recipeDraft.amountsText}}" data-field="amountsText" bindinput="recipeInput" maxlength="12000" />
+        <label>做法，每行一个步骤</label><textarea value="{{recipeDraft.stepsText}}" data-field="stepsText" bindinput="recipeInput" maxlength="60000" />
+        <button bindtap="saveRecipe" disabled="{{busy}}">保存菜谱</button><button class="secondary" bindtap="closeRecipe">取消</button>
+      </view>
+      <view wx:for="{{recipes}}" wx:key="id" class="panel"><view class="name">{{item.name}}</view><view class="muted">{{item.minutes}} 分钟 · {{item.servings}} 人份 · {{item.steps.length}} 步</view><view class="row"><button class="secondary grow" data-id="{{item.id}}" bindtap="editRecipe">编辑</button><button class="danger grow" data-id="{{item.id}}" bindtap="deleteRecipe" disabled="{{busy}}">删除</button></view></view>
+    </block>
+    <block wx:if="tab === 'models'">
+      <view class="panel muted">VISION：拍照识别 · CHAT：做饭答疑 · IMAGE：图标生成。三路可使用不同厂商、Token 和模型。接口参数须与后端适配一致。</view>
+      <view wx:if="modelDraft" class="panel"><view class="name">配置 {{modelDraft.role}}</view><label>HTTPS API 基址</label><input value="{{modelDraft.base}}" data-field="base" bindinput="modelInput" maxlength="500" /><label>模型名称</label><input value="{{modelDraft.model}}" data-field="model" bindinput="modelInput" maxlength="160" /><label>新 Token（留空保留当前值）</label><input password value="{{modelDraft.token}}" data-field="token" bindinput="modelInput" maxlength="2048" /><button bindtap="saveModel" disabled="{{busy}}">保存配置</button><button class="secondary" bindtap="closeModel">取消</button></view>
+      <view wx:for="{{models}}" wx:key="role" class="panel"><view class="name">{{item.role}}</view><view>{{item.model}}</view><view class="muted">{{item.base}}</view><view>{{item.mask}}</view><button class="secondary" data-role="{{item.role}}" bindtap="editModel">编辑配置 / 更换 Token</button><button class="secondary" data-role="{{item.role}}" bindtap="testModel" disabled="{{busy || job}}">{{item.role === 'IMAGE' ? '检查配置（不生图）' : '测试连接（调用 API）'}}</button><button class="danger" data-role="{{item.role}}" bindtap="clearToken" disabled="{{busy}}">移除 Token</button></view>
+    </block>
+    <button class="secondary" bindtap="reload" disabled="{{busy}}">刷新数据</button><button class="secondary" bindtap="disconnect">断开管理连接</button>
+  </block>
+  <view wx:if="notice" class="notice">{{notice}}</view>
+</view>

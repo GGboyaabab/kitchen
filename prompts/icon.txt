@@ -1,0 +1,6 @@
+Create a single ingredient illustration for an e-ink kitchen ingredient picker.
+Subject: {name}
+Pure white background, bold pure black outlines, recognizable silhouette, centered,
+one ingredient type only, generous whitespace, flat engraving-like line art.
+No text, no letters, no border, no gradients, no shadows, no photographic background.
+Must remain readable at 160 by 160 pixels after conversion to monochrome.
