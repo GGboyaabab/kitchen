@@ -124,7 +124,7 @@ def api(role, path, payload):
                           json.dumps(payload).encode(),
                           {'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
     try:
-        with request.urlopen(req, timeout=180) as response:
+        with request.urlopen(req, timeout=600 if role == 'IMAGE' else 180) as response:
             return json.load(response)
     except error.HTTPError as exc:
         raise ValueError('模型 API 请求失败（HTTP %s），请检查额度、模型权限和配置。' % exc.code) from exc
@@ -167,6 +167,46 @@ def recognize(photo, note):
         raise ValueError('识别结果格式不正确，请重试或手动输入。') from exc
 
 
+def download_image(url):
+    if not isinstance(url, str):
+        raise ValueError('生图结果地址无效。')
+    target = parse.urlsplit(url)
+    if target.scheme != 'https' or not target.hostname or target.username or target.password:
+        raise ValueError('生图结果地址无效。')
+    try:
+        with request.urlopen(url, timeout=60) as response:
+            raw = response.read(20 * 1024 * 1024 + 1)
+    except (error.HTTPError, error.URLError, TimeoutError) as exc:
+        raise ValueError('生成图片下载失败，请重试。') from exc
+    if len(raw) > 20 * 1024 * 1024:
+        raise ValueError('生成图片过大，没有保存。')
+    return raw
+
+
+def request_image(name):
+    config = model_config('IMAGE')
+    prompt = (ROOT / 'prompts/icon.txt').read_text(encoding='utf-8').replace('{name}', name)
+    if (parse.urlsplit(config['base']).hostname or '').startswith('token-plan.'):
+        result = api('IMAGE', 'services/aigc/multimodal-generation/generation', {
+            'model': config['model'],
+            'input': {'messages': [{'role': 'user', 'content': [{'text': prompt}]}]},
+            'parameters': {'size': '1024*1024'},
+        })
+        if result.get('code'):
+            raise ValueError('生图失败：%s' % result.get('message', result['code']))
+        try:
+            url = result['output']['choices'][0]['message']['content'][0]['image']
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ValueError('生图结果没有图片地址，请重试。') from exc
+        return download_image(url)
+    result = api('IMAGE', 'images/generations', {'model': config['model'], 'prompt': prompt,
+                 'size': '2K', 'response_format': 'b64_json', 'sequential_image_generation': 'disabled', 'stream': False})
+    try:
+        return base64.b64decode(result['data'][0]['b64_json'], validate=True)
+    except (KeyError, IndexError, TypeError, ValueError) as exc:
+        raise ValueError('生图结果无法读取，没有保存，请重试。') from exc
+
+
 def generate_icon(name, force=False):
     with GENERATION_LOCK:
         return _generate_icon(name, force)
@@ -177,11 +217,8 @@ def _generate_icon(name, force):
     with db() as conn:
         if not force and saved_icon(name):
             return False
-    result = api('IMAGE', 'images/generations', {'model': model_config('IMAGE')['model'],
-                 'prompt': (ROOT / 'prompts/icon.txt').read_text(encoding='utf-8').replace('{name}', name),
-                 'size': '2K', 'response_format': 'b64_json', 'sequential_image_generation': 'disabled', 'stream': False})
+    raw = request_image(name)
     try:
-        raw = base64.b64decode(result['data'][0]['b64_json'], validate=True)
         image = Image.open(io.BytesIO(raw)).convert('RGBA')
         background = Image.new('RGBA', image.size, 'white')
         background.alpha_composite(image)
@@ -189,7 +226,7 @@ def _generate_icon(name, force):
         image = image.point(lambda p: 255 if p > 180 else 0).convert('1')
         buffer = io.BytesIO()
         image.save(buffer, 'PNG')
-    except (KeyError, IndexError, ValueError, OSError) as exc:
+    except (ValueError, OSError) as exc:
         raise ValueError('生图结果无法读取，没有保存，请重试。') from exc
     with db() as conn:
         conn.execute('INSERT OR REPLACE INTO icons VALUES (?,?)', (key, buffer.getvalue()))

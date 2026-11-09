@@ -67,6 +67,40 @@ class KitchenTests(unittest.TestCase):
         self.assertEqual(image.mode, '1')
         self.assertEqual(image.size, (320, 320))
 
+    def test_token_plan_image_uses_dashscope_protocol(self):
+        with app.db():
+            pass
+        buffer = io.BytesIO()
+        Image.new('RGB', (32, 32), 'white').save(buffer, 'PNG')
+        config = {'base': 'https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1',
+                  'model': 'qwen-image-3.0-pro', 'key': 'test-key'}
+        url = 'https://dashscope-result-sz.oss-cn-shenzhen.aliyuncs.com/test.png?signature=test'
+        response = {'output': {'choices': [{'message': {'content': [{'image': url}]}}]}}
+        with patch.object(app, 'model_config', return_value=config), \
+             patch.object(app, 'api', return_value=response) as mocked, \
+             patch.object(app, 'download_image', return_value=buffer.getvalue()) as download:
+            self.assertTrue(app.generate_icon('鸡腿'))
+        args = mocked.call_args.args
+        self.assertEqual(args[:2], ('IMAGE', 'services/aigc/multimodal-generation/generation'))
+        self.assertEqual(args[2]['model'], 'qwen-image-3.0-pro')
+        self.assertEqual(args[2]['parameters'], {'size': '1024*1024'})
+        self.assertIn('Subject: 鸡腿', args[2]['input']['messages'][0]['content'][0]['text'])
+        download.assert_called_once_with(url)
+        image = Image.open(io.BytesIO(app.saved_icon('鸡腿')))
+        self.assertEqual(image.mode, '1')
+        self.assertEqual(image.size, (320, 320))
+
+    def test_token_plan_error_does_not_save_an_icon(self):
+        with app.db():
+            pass
+        config = {'base': 'https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1',
+                  'model': 'qwen-image-3.0-pro', 'key': 'test-key'}
+        with patch.object(app, 'model_config', return_value=config), \
+             patch.object(app, 'api', return_value={'code': 'InvalidApiKey', 'message': 'Invalid key'}):
+            with self.assertRaisesRegex(ValueError, 'Invalid key'):
+                app.generate_icon('鸡腿')
+        self.assertIsNone(app.saved_icon('鸡腿'))
+
     def test_recognition_normalizes_and_requires_confirmation(self):
         response = {'choices': [{'message': {'content': '{"ingredients":["洋芋","土豆","鸡蛋"]}'}}]}
         with patch.object(app, 'api', return_value=response):

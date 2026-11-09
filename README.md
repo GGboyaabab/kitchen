@@ -110,13 +110,15 @@ python app.py
 
 三个 Key 可独立配置，只开通其中一项也能使用对应功能。默认识别模型 `qwen3-vl-plus`、问答模型 `deepseek-flash`、图标模型 `doubao-seedream-4-5-251128`。生图默认走火山引擎 LAS 算子接口，需要 LAS 的 Key，不能直接把方舟 Key 填到 LAS。已有方舟生图服务时，把 `IMAGE_BASE_URL` 设置为控制台对应的 API 基址并使用匹配 Key。
 
-每路都可分别用 `VISION_API_KEY` / `VISION_BASE_URL` / `VISION_MODEL`、`CHAT_API_KEY` / `CHAT_BASE_URL` / `CHAT_MODEL`、`IMAGE_API_KEY` / `IMAGE_BASE_URL` / `IMAGE_MODEL` 覆盖配置。接口基址必须为 HTTPS；聊天端需兼容 Chat Completions；生图端需兼容此 Seedream 请求参数。不要只修改模型名称就切换到不兼容的供应商。
+每路都可分别用 `VISION_API_KEY` / `VISION_BASE_URL` / `VISION_MODEL`、`CHAT_API_KEY` / `CHAT_BASE_URL` / `CHAT_MODEL`、`IMAGE_API_KEY` / `IMAGE_BASE_URL` / `IMAGE_MODEL` 覆盖配置。接口基址必须为 HTTPS；聊天端需兼容 Chat Completions；其他生图端需兼容此 Seedream 请求参数。不要只修改模型名称就切换到不兼容的供应商。
+
+百炼月订阅 Token Plan 也可用于生图：`IMAGE_BASE_URL` 填控制台对应地域的 `https://token-plan.cn-beijing.maas.aliyuncs.com/api/v1`（北京示例），`IMAGE_MODEL` 可填 `qwen-image-3.0-pro`、`wan2.7-image` 或 `wan2.7-image-pro`，`IMAGE_API_KEY` 使用套餐的 `sk-sp-` Key。也可在小程序“模型配置”中填写。该地址使用 DashScope 同步协议，服务端会及时下载有时效的返回图片 URL；Key、地域和接口地址必须一致。
 
 程序不会自动读取 `.env`。如已启动服务，修改环境变量后需要重新启动。API 权限和网络可达性取决于你的账户与运行环境。尚未使用真实 Key 做收费接口联调。
 
 点击“手机食材库”，拍照 / 选照片并补充文字，点击识别。模型只返回候选名称，修改并确认后才加入库。也可直接输入“鸡腿，土豆，鸡蛋”，无需调用识别 API。HEIC 请先转换为 JPEG。
 
-识别、生图、跟做答疑是独立请求，按钮均标注“调用 API”；识别不自动生图。照片会在本机缩小并去除 EXIF 后传给所配置的视觉模型识别，原始照片不落盘。生图使用确认后的标准名称，不把厨房照片作为图标背景。用户点击“生成图片”才付费调用生图。
+识别、生图、跟做答疑是独立请求，按钮均标注“调用 API”；识别不自动生图。照片会在本机缩小并去除 EXIF 后传给所配置的视觉模型识别，原始照片不落盘。生图使用确认后的标准名称，不把厨房照片作为图标背景。用户点击“生成图片”才调用生图并计入用量。
 
 ## 图片如何复用
 
